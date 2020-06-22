@@ -4,7 +4,9 @@ import * as acorn from 'acorn';
 
 function findRequires(jsCode: string): any[] {
     const requires: string[] = [];
-    const ast = acorn.parse(jsCode);
+    const ast = acorn.parse(jsCode, {
+        allowHashBang: true
+    });
     acornWalk.simple(ast, {
         CallExpression: (node: any) => {
             if (node.callee.type === 'Identifier' && node.callee.name === 'require') {
