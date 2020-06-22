@@ -1,0 +1,17 @@
+{
+  "name": "unit",
+  "version": "1.0.0",
+  "description": "",
+  "main": "semver.js",
+  "scripts": {
+    "test": "node ./semver.js | tap-spec"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/tape": "^4.13.0",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.0.1"
+  }
+}

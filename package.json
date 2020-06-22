@@ -1,0 +1,21 @@
+{
+  "name": "gkp",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "acorn": "^7.2.0",
+    "acorn-walk": "^7.1.1",
+    "concat-with-sourcemaps": "^1.1.0",
+    "resolve-from": "^5.0.0",
+    "source-map": "^0.7.3"
+  },
+  "files": [
+    "./readme.md"
+  ]
+}

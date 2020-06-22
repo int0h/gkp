@@ -1,0 +1,19 @@
++ remove module state (move to classess etc.)
++ tests
++ esatblish proper versioning system
++ fix source maps
++ support build step
++ support watch
++ support TS
+- add overrideApiVersion
+- fix __filename and __dirname
+- provide cli
+- setup different verbosity levels
+- support Sucrase / swc / something else
+- fix TODO's in the code
+- suport es6 modules
+- publish gkp and @gkp/bcrypt?
+- support @package/foo overrides
+- use relative paths instead of absoulute ones: /home/user/projets... -> ../../node_modules/lib-a
+- support analyze (output require related problems in given project probably with suggested gkp-overrides)
+- support multiple @gkp-overrides folders e.g. (/foo/app/node_modules/@gkp-overrides, /foo/node_modules/@gkp-overrides)

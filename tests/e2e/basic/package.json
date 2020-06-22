@@ -1,0 +1,17 @@
+{
+  "name": "basic",
+  "version": "1.0.0",
+  "description": "",
+  "main": "run.js",
+  "scripts": {
+    "test": "node ./run.js | tap-spec"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/tape": "^4.13.0",
+    "tap-spec": "^5.0.0",
+    "tape": "^5.0.1"
+  }
+}
