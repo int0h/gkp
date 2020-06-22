@@ -12,6 +12,7 @@ export function tsBuild(params: TsParams) {}
 
 export function tsWatch(params: TsParams) {
     const vfs = new LayerVfs(new RealFs());
+    const started = Date.now();
 
     watch({
         fs: {
@@ -26,7 +27,7 @@ export function tsWatch(params: TsParams) {
             console.time('building');
             build(project, params.outPath);
             console.timeEnd('building');
-            console.log('\n\nDONE\n\n');
+            console.log('\n\nDONE\n\n', Date.now() - started);
 
             params.onBuildComplete?.();
         }
