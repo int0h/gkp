@@ -6,9 +6,11 @@
         "esModuleInterop": true,
         "forceConsistentCasingInFileNames": true,
         "inlineSourceMap": true,
-        "inlineSources": true
+        "inlineSources": true,
+        "declaration": true
     },
     "include": [
+        "./cli.ts",
         "./index.ts",
         "./src/api/*",
         "./src/index.ts",
