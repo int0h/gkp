@@ -7,11 +7,17 @@ import {ContentArray, ContentObj} from './types';
 function wrapFile(jsCode: string, sourceMap: string | null, filePath: string): ContentArray {
     return [
         'function(exports, require, module, __filename, __dirname){',
+        '\n',
+        '// start of the file:',
+        '\n\n',
         {
             code: jsCode.replace(/\n\/\/# sourceMappingURL=[^\n]*/g, '\n'),
             sourceMap,
             path: filePath
         },
+        '\n\n',
+        '// end of the file',
+        '\n',
         ';}',
     ];
 }
@@ -20,11 +26,19 @@ export function concatProject(projectMeta: Project): ContentArray {
     const moduleCodeChunks: ContentArray = [];
     Object.entries(projectMeta.modules).forEach(([id, {code, resolveMap, packageName, packageVersion, sourceMap, buildResult}]) => {
         moduleCodeChunks.push(
+            '\n\n\n',
+            '// ' + '='.repeat(80),
+            '\n',
+            `//module: ${packageName}: id`,
+            '\n',
             JSON.stringify(id),
             `: {...${JSON.stringify({resolveMap, packageName, packageVersion, buildResult}, null, '\t')}, fn:\n`,
             // ...wrapFile(code, sourceMap, path.relative(projectMeta.entry, id) || 'entry.js'),
             ...wrapFile(code, sourceMap, id),
             '\n},',
+            '\n',
+            '// ' + '='.repeat(80),
+            '\n\n\n',
         );
     });
     const runtimePath = path.resolve(__dirname, './runtime.js');
