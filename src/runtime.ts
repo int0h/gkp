@@ -36,8 +36,15 @@ for (const key of Object.keys(modules)) {
 
 const coreModules: string[] = require('module').builtinModules;
 
+function proxyField<T>(obj: any, target: T, field: keyof T) {
+    Object.defineProperty(obj, field, {
+        get: () => target[field],
+        set: v => target[field] = v
+    });
+}
+
 function prepareRequireForModule(moduleObj: RuntimeModule, packageOverride: ModuleCfgObject | null): (path: string) => any {
-    return (reqPath: string) => {
+    function requireFn(reqPath: string) {
         if (coreModules.includes(reqPath)) {
             return require(reqPath);
         }
@@ -63,6 +70,13 @@ function prepareRequireForModule(moduleObj: RuntimeModule, packageOverride: Modu
         }
         throw new Error('todo');
     };
+
+    proxyField(requireFn, require, 'main');
+    proxyField(requireFn, require, 'cache');
+    proxyField(requireFn, require, 'extensions');
+    proxyField(requireFn, require, 'resolve');
+
+    return requireFn;
 }
 
 function requireModule(moduleId: string, packageOverride: ModuleCfgObject | null) {
