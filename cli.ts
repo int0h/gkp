@@ -25,7 +25,13 @@ const {options, _: arg} = cli({
         project: option.string
             .alias('p')
             .description('project root')
-            .process('post', v => path.resolve(v)),
+            .process('post', v => path.resolve(v))
+            .required(),
+            entry: option.string
+            .alias('e')
+            .description('project entry')
+            .process('post', v => path.resolve(v))
+            .required(),
     },
     _: option.string
         .description('either entrypoint or project root')
@@ -35,32 +41,11 @@ const {options, _: arg} = cli({
 if (!options.watch) {
     throw new Error('only watch is supported for now');
 }
-let projectPath: string;
-let entryPath: string;
-if (!options.project && !arg) {
-    throw new Error('at least --project or entrypoint should be specified');
-}
-if (arg && fs.statSync(arg).isDirectory()) {
-    if (options.project) {
-        throw new Error('do not specify --project when passing project path as the 1st argument');
-    }
-    projectPath = arg;
-    entryPath = path.join(projectPath, 'index.js');
-} else if (!arg) {
-    projectPath = options.project!;
-    entryPath = path.join(projectPath, 'index.js');
-} else if (!options.project) {
-    projectPath = path.dirname(arg);
-    entryPath = arg;
-} else {
-    projectPath = options.project;
-    entryPath = arg;
-}
 
 tsWatch({
-    entryAbsoultePath: entryPath,
+    entryAbsoultePath: options.entry,
     outPath: options.output,
-    projectRoot: projectPath,
+    projectRoot: options.project,
 });
 
 console.log(require.main?.filename, __filename);
