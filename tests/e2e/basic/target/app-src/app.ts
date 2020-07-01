@@ -5,4 +5,4 @@ const {versionedHello} = require('versioned-dep');
 const {versionedDepHolderHello} = require('versioned-dep-holder');
 const {depWithBuildHello} = require('dep-with-build');
 
-module.exports = {simpleDepHello, simpleOverrideHello, depWithDepsHello, versionedHello, versionedDepHolderHello, depWithBuildHello};
+export default {simpleDepHello, simpleOverrideHello, depWithDepsHello, versionedHello, versionedDepHolderHello, depWithBuildHello};

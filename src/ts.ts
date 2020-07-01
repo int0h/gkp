@@ -7,6 +7,7 @@ export type Cfg = {
         writeFile: (path: string, content: string) => void;
     };
     onBuildComplete?: () => void;
+    onError?: (opts: {message: string, code: number}) => void;
 };
 
 export function watch(cfg: Cfg) {
@@ -46,7 +47,15 @@ export function watch(cfg: Cfg) {
     };
 
     function reportDiagnostic(diagnostic: ts.Diagnostic) {
-        console.error("Error", diagnostic.code, ":", ts.flattenDiagnosticMessageText( diagnostic.messageText, formatHost.getNewLine()));
+        const code = diagnostic.code;
+        const message = ts.flattenDiagnosticMessageText( diagnostic.messageText, formatHost.getNewLine());
+        console.error("Error", code, ":", message);
+        cfg.onError && setTimeout(() => {
+            cfg.onError?.({
+                code,
+                message,
+            });
+        }, 0);
     }
 
     /**
@@ -55,12 +64,33 @@ export function watch(cfg: Cfg) {
      */
     function reportWatchStatusChanged(diagnostic: ts.Diagnostic) {
         if (diagnostic.code === 6194 && diagnostic.messageText.toString().indexOf('Found 0') === 0) {
-            cfg.onBuildComplete?.();
+            cfg.onBuildComplete && setTimeout(() => {
+                cfg.onBuildComplete?.();
+            }, 0);
         }
         console.info(ts.formatDiagnostic(diagnostic, formatHost));
     }
 
-    ts.createWatchProgram(host);
+    return ts.createWatchProgram(host);
+}
+
+export function build(cfg: Cfg): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const prog = watch({
+            ...cfg,
+            onBuildComplete: () => {
+                cfg.onBuildComplete?.();
+                prog.close();
+                resolve();
+            },
+            onError: (opts) => {
+                cfg.onError?.(opts);
+                prog.close();
+                reject();
+            }
+        })
+    });
+
 }
 
 

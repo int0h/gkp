@@ -1,20 +1,24 @@
+//@ts-check
 const test = require('tape');
 
 const fs = require('fs');
 const path = require('path');
-const {loadProject, pack, build} = require('../../../src/index');
+const {tsBuild} = require('../../../');
 
 process.chdir(__dirname);
 
-test('build successful', t => {
-    const project = loadProject(path.resolve('./target/app-src/app.js'));
-    build(project, './target/build');
+test('build successful', async t => {
+    await tsBuild({
+        entryAbsoultePath: path.resolve('./target/app-src/app.js'),
+        outPath: './target/build',
+        projectRoot: './target/app-src'
+    });
     // const {code, sourceMap} = pack(project);
     // fs.writeFileSync('./target/build/bundle.js', code + '\n//# sourceMappingURL=bundle.js.map', 'utf-8');
     // fs.writeFileSync('./target/build/bundle.js.map', sourceMap, 'utf-8');
 
-    /** @type {import('./target/app-src/app')} */
-    const bundle = require('./target/build/bundle');
+    /** @type {import('./target/app-src/app').default} */
+    const bundle = require('./target/build/bundle').default;
 
     test('dependencies works fine', t => {
         t.is(bundle.simpleDepHello(), 'hello');
@@ -38,7 +42,7 @@ test('build successful', t => {
     });
 
     test('build step', t => {
-        t.is(bundle.depWithBuildHello().binaryPath, 'binary/bin');
+        t.is(bundle.depWithBuildHello().binaryPath, 'binary/dep-with-build/bin');
         t.end();
     });
 

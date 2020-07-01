@@ -3,7 +3,7 @@ import {cli, option} from 'typed-cli';
 import fs from 'fs';
 import path from 'path';
 
-import {tsWatch} from './';
+import {tsWatch, tsBuild} from './';
 
 const {options, _: arg} = cli({
     description: 'Bundles code',
@@ -38,14 +38,26 @@ const {options, _: arg} = cli({
         .process('post', v => path.resolve(v)),
 });
 
-if (!options.watch) {
-    throw new Error('only watch is supported for now');
-}
-
-tsWatch({
+const params = {
     entryAbsoultePath: options.entry,
     outPath: options.output,
     projectRoot: options.project,
-});
+};
+
+if (!options.watch) {
+    tsBuild(params)
+        .then(() => {
+            console.log('Compilled successfully!');
+            process.exit(0);
+        })
+        .catch(() => {
+            console.log('Failed to compille!');
+            process.exit(1);
+        });
+} else {
+    tsWatch(params);
+}
+
+
 
 console.log(require.main?.filename, __filename);
