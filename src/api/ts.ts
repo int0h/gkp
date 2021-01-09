@@ -20,11 +20,11 @@ export async function tsBuild(params: TsParams): Promise<void> {
         projectRoot: params.projectRoot,
         onBuildComplete: () => {
             console.time('reading');
-            const project = loadProject(params.entryAbsoultePath, {}, vfs);
+            const project = loadProject(params.entryAbsoultePath, {}, vfs, params.projectRoot ?? process.cwd(), params.outPath);
             console.timeEnd('reading');
 
             console.time('building');
-            build(project, params.outPath);
+            build(project, params.outPath, params.projectRoot ?? process.cwd());
             console.timeEnd('building');
             console.log('\n\nDONE\n\n', Date.now() - started);
 
@@ -44,11 +44,11 @@ export function tsWatch(params: TsParams) {
         projectRoot: params.projectRoot,
         onBuildComplete: () => {
             console.time('reading');
-            const project = loadProject(params.entryAbsoultePath, {}, vfs);
+            const project = loadProject(params.entryAbsoultePath, {}, vfs, params.projectRoot ?? process.cwd(), params.outPath);
             console.timeEnd('reading');
 
             console.time('building');
-            build(project, params.outPath);
+            build(project, params.outPath, params.projectRoot ?? process.cwd());
             console.timeEnd('building');
             console.log('\n\nDONE\n\n', Date.now() - started);
 

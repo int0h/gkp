@@ -14,7 +14,7 @@ export function findPackageJson(absPath: string): undefined | string {
     return findPackageJson(parentDir);
 }
 
-type PackageJsonData = {name: string, version: string};
+type PackageJsonData = {name: string, version: string, packageJsonPath: string};
 const packageJsonCache: Record<string, PackageJsonData> = {};
 export function resolvePackageJsonData(absPath: string): PackageJsonData | null {
     const packageJsonPath = findPackageJson(absPath);
@@ -26,6 +26,6 @@ export function resolvePackageJsonData(absPath: string): PackageJsonData | null 
     }
     const json = fs.readFileSync(packageJsonPath, 'utf-8');
     const {name, version} = JSON.parse(json) as PackageJsonData;
-    packageJsonCache[packageJsonPath] = {name, version};
-    return {name, version};
+    packageJsonCache[packageJsonPath] = {name, version, packageJsonPath};
+    return {name, version, packageJsonPath};
 }

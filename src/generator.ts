@@ -22,7 +22,7 @@ function wrapFile(jsCode: string, sourceMap: string | null, filePath: string): C
     ];
 }
 
-export function concatProject(projectMeta: Project): ContentArray {
+export function concatProject(projectMeta: Project, projectRoot: string): ContentArray {
     const moduleCodeChunks: ContentArray = [];
     Object.entries(projectMeta.modules).forEach(([id, {code, resolveMap, packageName, packageVersion, sourceMap, buildResult}]) => {
         moduleCodeChunks.push(
@@ -43,7 +43,7 @@ export function concatProject(projectMeta: Project): ContentArray {
     });
     const runtimePath = path.resolve(__dirname, './runtime.js');
     const runtimeCode = fs.readFileSync(runtimePath, 'utf-8');
-    const runtimeSourcemap = resolveSourcemap(projectMeta.entry, runtimeCode, runtimePath);
+    const runtimeSourcemap = resolveSourcemap(projectMeta.entry, runtimeCode, runtimePath, projectRoot);
     return [
         `(function(entry, modules, overrides){\n`,
         {code: runtimeCode, sourceMap: runtimeSourcemap, path: runtimePath},
@@ -75,14 +75,14 @@ function buildProject(projectMeta: Project, outputPath: string): Project {
     return newProjectMeta;
 }
 
-export function pack(projectMeta: Project): ContentObj {
-    const chunks = concatProject(projectMeta);
+export function pack(projectMeta: Project, projectRoot: string): ContentObj {
+    const chunks = concatProject(projectMeta, projectRoot);
     return joinChunks(chunks);
 }
 
-export function build(projectMeta: Project, outputPath: string) {
+export function build(projectMeta: Project, outputPath: string, projectRoot: string) {
     const pm = buildProject(projectMeta, outputPath);
-    const {code, sourceMap} = pack(pm);
+    const {code, sourceMap} = pack(pm, projectRoot);
     //  use string concatenation to avoid parsing this line as source map ref
     fs.writeFileSync(path.join(outputPath, './bundle.js'), code + '\n//' + '# sourceMappingURL=bundle.js.map', 'utf-8'); // TODO do it better
     fs.writeFileSync(path.join(outputPath, './bundle.js.map'), sourceMap, 'utf-8');

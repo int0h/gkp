@@ -50,7 +50,8 @@ if (!options.watch) {
             console.log('Compilled successfully!');
             process.exit(0);
         })
-        .catch(() => {
+        .catch((e) => {
+            console.error(e);
             console.log('Failed to compille!');
             process.exit(1);
         });

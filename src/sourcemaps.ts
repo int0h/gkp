@@ -26,7 +26,7 @@ function readSourcemap(jsCode: string, filePath: string): string | null {
     }
 }
 
-export function resolveSourcemap(entry: string, jsCode: string, filePath: string): string | null {
+export function resolveSourcemap(entry: string, jsCode: string, filePath: string, outDir: string): string | null {
     const sourcemap = readSourcemap(jsCode, filePath);
     if (!sourcemap) {
         return null;
@@ -34,8 +34,8 @@ export function resolveSourcemap(entry: string, jsCode: string, filePath: string
     const parsed = JSON.parse(sourcemap);
     const res = {
         ...parsed,
-        file: 'gkp:///' + path.relative(entry, path.resolve(path.dirname(filePath), parsed.file)) || entry,
-        sources: parsed.sources.map((p: string) => 'gkp:///' + path.relative(entry, path.resolve(path.dirname(filePath), p)) || entry)
+        file: path.relative(outDir, path.resolve(path.dirname(filePath), parsed.file)) || entry,
+        sources: parsed.sources.map((p: string) => path.relative(outDir, path.resolve(path.dirname(filePath), p)) || entry)
     };
     return JSON.stringify(res);
 }

@@ -3,7 +3,7 @@ import fs from 'fs';
 import {ModuleCfg, ModuleOverride, ModuleCfgObject} from './types';
 import {matchVersion} from './semver';
 
-export function resolveModuleOverridesPath(entryDir: string): string | null {
+function resolveModuleOverridesPath(entryDir: string): string | null {
     const resolved = path.join(entryDir, path.basename(entryDir) === 'node_modules'
         ? '@gkp-overrides'
         : '/node_modules/@gkp-overrides');
@@ -20,7 +20,7 @@ export function resolveModuleOverridesPath(entryDir: string): string | null {
 
 export type OverrideMap = Record<string, Record<string, ModuleOverride>>;
 
-export function findOverrides(overridesPath: string): OverrideMap {
+function readOverrides(overridesPath: string): OverrideMap {
     const moduleOverrides: OverrideMap = {};
     const moduleList = fs.readdirSync(overridesPath);
     moduleList.forEach(packageName => {
@@ -40,6 +40,33 @@ export function findOverrides(overridesPath: string): OverrideMap {
         });
     });
     return moduleOverrides;
+}
+
+function findNodeModulesOverridesForDir(entryDir: string): OverrideMap {
+    const p = resolveModuleOverridesPath(entryDir);
+    if (!p) {
+        return {};
+    }
+    return readOverrides(p);
+}
+
+function findLocalOverridesForDir(projectDir: string | undefined): OverrideMap {
+    if (!projectDir) {
+        return {};
+    }
+    const ovPath = path.resolve(projectDir, '.gkp-overrides');
+    if (!fs.existsSync(ovPath)) {
+        return {};
+    }
+    console.log('\n\nFound local overrides at:', ovPath, '\n\n');
+    return readOverrides(ovPath);
+}
+
+export function findOverridesForDir(entryDir: string, projectDir: string | undefined): OverrideMap {
+    return {
+        ...findNodeModulesOverridesForDir(entryDir),
+        ...findLocalOverridesForDir(projectDir),
+    };
 }
 
 export function resolvePackageOverride(moduleOverrides: OverrideMap, packageData: {name?: string, version?: string} | null, curPackageOverride: null | ModuleCfg, addOverrideFile: (override: ModuleOverride) => void): ModuleCfg | null {

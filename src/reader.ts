@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 import {ModuleCfg, ModuleOverride, ModuleCfgObject} from './types';
 import {parse} from './parsers/acorn';
-import {resolvePackageOverride, findOverrides, resolveModuleOverridesPath} from './overrides';
+import {resolvePackageOverride, findOverridesForDir} from './overrides';
 import {resolvePackageJsonData} from './package-json';
 import {resolveRequired, ResolutionFileType} from './resolver';
 import {resolveSourcemap} from './sourcemaps';
@@ -25,16 +25,14 @@ export type Project = ReturnType<typeof loadProject>;
 
 const parseCached = cacheParser(parse);
 
-export function loadProject(entry: string, cfg: ModuleCfg = {modules: {}}, vfs: IVfs) {
+export function loadProject(entry: string, cfg: ModuleCfg = {modules: {}}, vfs: IVfs, projectRoot: string, outDir: string) {
     if (!path.isAbsolute(entry)) {
         throw new Error('entry has to be absolute');
     }
 
-    const gkpOverridesPath = resolveModuleOverridesPath(path.dirname(entry));
-    const globalOverrides = gkpOverridesPath
-        ? findOverrides(gkpOverridesPath)
-        : {};
+    const globalOverrides = findOverridesForDir(path.dirname(entry), projectRoot);
     const usedGlobalOverrides: Record<string, string> = {};
+    const modulesWithPrerequires = new Set<string>();
 
     const resolvedModules: Modules = {};
 
@@ -89,7 +87,7 @@ export function loadProject(entry: string, cfg: ModuleCfg = {modules: {}}, vfs: 
             packageName,
             packageVersion,
             code: jsCode,
-            sourceMap: resolveSourcemap(entry, jsCode, absolutePath),
+            sourceMap: resolveSourcemap(entry, jsCode, absolutePath, outDir),
             buildFn: packageOverride?.build ?? null,
             buildResult: null,
         };
@@ -100,7 +98,17 @@ export function loadProject(entry: string, cfg: ModuleCfg = {modules: {}}, vfs: 
             ? modulesPath
             : modulesPath.concat(packageName);
 
-        const {dynamicDeps, deps} = parseCached(jsCode);
+        let {dynamicDeps, deps} = parseCached(absolutePath, jsCode);
+
+        if (packageData && packageOverride?.prerequires && packageName && !modulesWithPrerequires.has(packageName)) {
+            const prerequires = packageOverride.prerequires;
+            modulesWithPrerequires.add(packageName);
+            deps = deps.concat(deps, prerequires.map(p => {
+                const absPrereqPath = path.resolve(path.dirname(packageData.packageJsonPath), p);
+                const relPath = path.relative(path.dirname(absolutePath), absPrereqPath);
+                return './' + relPath;
+            }));
+        }
 
         for (const ddep of dynamicDeps) {
             if (!packageOverride?.allowDynamicRequire) {
@@ -121,7 +129,7 @@ export function loadProject(entry: string, cfg: ModuleCfg = {modules: {}}, vfs: 
                     console.info(reqPath, 'is ignored');
                     return;
                 } else {
-                    console.error(reqPath);
+                    console.error(reqPath, 'is not found');
                     return;
                 }
             }

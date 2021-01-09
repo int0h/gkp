@@ -4,7 +4,7 @@ export type DynamicDepMeta = {
     column: number;
 };
 
-export type Parser = (code: string) => {
+export type Parser = (filename: string, code: string) => {
     deps: string[];
     dynamicDeps: DynamicDepMeta[];
 };
@@ -38,6 +38,7 @@ export type ModuleCfgObject<B = any> = {
     requireOverride?: (meta: RequireMetaData<B>) => any;
     dynamicRequire?: (meta: RequireMetaData<B>) => any;
     build?: (arg: BuildFnArg) => B;
+    prerequires?: string[];
 };
 
 export type ModuleCfg = ModuleStub | ModuleCfgObject;
